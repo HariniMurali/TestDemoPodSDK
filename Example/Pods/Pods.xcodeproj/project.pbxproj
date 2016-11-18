@@ -16,7 +16,6 @@
 		7A567F6F93B19952C0960604133ACA54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */; };
 		865796B595A77CF0F5ABBF7E4CF8D694 /* Pods-TestDemoPodSDK_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 95F9802D259B9B663465627069CAC4E9 /* Pods-TestDemoPodSDK_Example-dummy.m */; };
 		92E758680457080D7A31DFB2E69ED0F4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */; };
-		BF5CE39DA8B0C338EC7D0B67E330DF0A /* ReplaceMe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 804BB535BBF7035D97A4A818C07FA8AF /* ReplaceMe.swift */; };
 		ECC67CA6B66F0DE96460BA79E5BEAC7B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */; };
 		FE519BC186224866EA282A8C68D12847 /* TestDemoPodSDK-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 52CAB4CDD684A610240D1959A7A5B46B /* TestDemoPodSDK-dummy.m */; };
 /* End PBXBuildFile section */
@@ -39,8 +38,8 @@
 		24607B2369EFA6BB3295456327467E65 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		368427301DDECFE7004FF954 /* TicketHomeController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TicketHomeController.swift; sourceTree = "<group>"; };
 		368427311DDECFE7004FF954 /* TicketsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TicketsCell.swift; sourceTree = "<group>"; };
-		368427341DDED001004FF954 /* Ticket.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Ticket.storyboard; sourceTree = "<group>"; };
-		368427351DDED001004FF954 /* TicketCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TicketCell.xib; sourceTree = "<group>"; };
+		368427361DDED13C004FF954 /* Ticket.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Ticket.storyboard; sourceTree = "<group>"; };
+		368427371DDED13C004FF954 /* TicketCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TicketCell.xib; sourceTree = "<group>"; };
 		36944D91B63A1521D64CE11905B7EEC7 /* TestDemoPodSDK.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = TestDemoPodSDK.xcconfig; sourceTree = "<group>"; };
 		379EA47B3B94FCB5EC1FBD0C2F76C4FD /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3C7B7D054FD2FF1700482CEB80DF1D3C /* Pods-TestDemoPodSDK_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TestDemoPodSDK_Example-acknowledgements.plist"; sourceTree = "<group>"; };
@@ -53,7 +52,6 @@
 		5ECA9D734F72E6FBA089C7BB03A89ABF /* Pods_TestDemoPodSDK_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TestDemoPodSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		67E514EE0407DAE3D8CE2516C56FD0F7 /* TestDemoPodSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TestDemoPodSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD024732CDEFC3B4179E14967FF45EE /* TestDemoPodSDK-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "TestDemoPodSDK-prefix.pch"; sourceTree = "<group>"; };
-		804BB535BBF7035D97A4A818C07FA8AF /* ReplaceMe.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReplaceMe.swift; sourceTree = "<group>"; };
 		9377DF69CFF43E3BB9C83FF1CF3CC482 /* Pods-TestDemoPodSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TestDemoPodSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		95F9802D259B9B663465627069CAC4E9 /* Pods-TestDemoPodSDK_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-TestDemoPodSDK_Example-dummy.m"; sourceTree = "<group>"; };
@@ -110,9 +108,10 @@
 		169E32D21DCB946420BC38871EB9443F /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				368427361DDED13C004FF954 /* Ticket.storyboard */,
+				368427371DDED13C004FF954 /* TicketCell.xib */,
 				368427301DDECFE7004FF954 /* TicketHomeController.swift */,
 				368427311DDECFE7004FF954 /* TicketsCell.swift */,
-				804BB535BBF7035D97A4A818C07FA8AF /* ReplaceMe.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -183,8 +182,6 @@
 		B7346A21A94CF63A5428597EA14175C4 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				368427341DDED001004FF954 /* Ticket.storyboard */,
-				368427351DDED001004FF954 /* TicketCell.xib */,
 				379EA47B3B94FCB5EC1FBD0C2F76C4FD /* Info.plist */,
 				564E18CBCEBE95AE5C0CF29D7CD7651E /* TestDemoPodSDK.modulemap */,
 				36944D91B63A1521D64CE11905B7EEC7 /* TestDemoPodSDK.xcconfig */,
@@ -366,7 +363,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF5CE39DA8B0C338EC7D0B67E330DF0A /* ReplaceMe.swift in Sources */,
 				FE519BC186224866EA282A8C68D12847 /* TestDemoPodSDK-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
