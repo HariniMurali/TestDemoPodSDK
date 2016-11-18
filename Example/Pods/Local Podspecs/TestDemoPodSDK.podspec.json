@@ -1,9 +1,9 @@
 {
   "name": "TestDemoPodSDK",
   "version": "0.1.0",
-  "summary": "A short description of TestDemoPodSDK.",
-  "description": "TODO: Add long description of the pod here.",
-  "homepage": "https://github.com/<GITHUB_USERNAME>/TestDemoPodSDK",
+  "summary": "A test cocoa named TestDemoPodSDK.",
+  "description": "This is a demo for testing purpose.",
+  "homepage": "https://github.com/HariniMurali/TestDemoPodSDK",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
@@ -12,7 +12,7 @@
     "Carey Sam": "jcareysam@gmail.com"
   },
   "source": {
-    "git": "https://github.com/<GITHUB_USERNAME>/TestDemoPodSDK.git",
+    "git": "https://github.com/HariniMurali/TestDemoPodSDK.git",
     "tag": "0.1.0"
   },
   "platforms": {
