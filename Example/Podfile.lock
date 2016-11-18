@@ -1,0 +1,16 @@
+PODS:
+  - TestDemoPodSDK (0.1.0)
+
+DEPENDENCIES:
+  - TestDemoPodSDK (from `../`)
+
+EXTERNAL SOURCES:
+  TestDemoPodSDK:
+    :path: ../
+
+SPEC CHECKSUMS:
+  TestDemoPodSDK: f306473f48388b52287227aefe26dd01830fe29f
+
+PODFILE CHECKSUM: 1b25cb25c9d97a94b037445990dcf70cd6ad15cd
+
+COCOAPODS: 1.1.1

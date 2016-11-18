@@ -1,0 +1,22 @@
+{
+  "name": "TestDemoPodSDK",
+  "version": "0.1.0",
+  "summary": "A short description of TestDemoPodSDK.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/<GITHUB_USERNAME>/TestDemoPodSDK",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Carey Sam": "jcareysam@gmail.com"
+  },
+  "source": {
+    "git": "https://github.com/<GITHUB_USERNAME>/TestDemoPodSDK.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "TestDemoPodSDK/Classes/**/*"
+}
