@@ -18,5 +18,10 @@
   "platforms": {
     "ios": "8.0"
   },
-  "source_files": "TestDemoPodSDK/Classes/**/*"
+  "source_files": "TestDemoPodSDK/Classes/**/*",
+  "resource_bundles": {
+    "TestDemoPodSDK": [
+      "TestDemoPodSDK/Assets/*.{xib,storyboard}"
+    ]
+  }
 }

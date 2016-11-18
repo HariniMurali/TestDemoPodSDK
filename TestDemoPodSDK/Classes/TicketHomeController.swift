@@ -8,13 +8,13 @@
 
 import UIKit
 
-class TicketHomeController: UITableViewController {
+public class TicketHomeController: UITableViewController {
     
     var ticketsData: [[String:String]] = []
 
     @IBOutlet var ticketsTable: UITableView!
     
-    override func viewDidLoad() {
+    override public func viewDidLoad() {
         super.viewDidLoad()
         
         for _ in 0 ..< 3
@@ -39,25 +39,25 @@ class TicketHomeController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
 
-    override func didReceiveMemoryWarning() {
+    override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    override public func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return ticketsData.count
     }
 
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "singleCell", for: indexPath) as! TicketsCell
         
         cell.labelRequester.text = ticketsData[indexPath.row]["Requester"]
@@ -83,7 +83,10 @@ class TicketHomeController: UITableViewController {
     func ConfigureTableView() {
         self.ticketsTable.delegate = self
         self.ticketsTable.dataSource = self
-        self.ticketsTable.register(UINib(nibName: "TicketCell", bundle: nil), forCellReuseIdentifier: "singleCell")
+        let frameworkBundle = Bundle(for:  TicketHomeController.self)
+        let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
+        let resourceBundle = Bundle(url: bundleURL!)
+        self.ticketsTable.register(UINib(nibName: "TicketCell", bundle: resourceBundle), forCellReuseIdentifier: "singleCell")
         self.ticketsTable.rowHeight = 100.0
     }
 

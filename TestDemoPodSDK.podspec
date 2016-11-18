@@ -31,10 +31,10 @@ This is a demo for testing purpose.
   s.ios.deployment_target = '8.0'
 
   s.source_files = 'TestDemoPodSDK/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'TestDemoPodSDK' => ['TestDemoPodSDK/Assets/*.png']
-  # }
+	
+   s.resource_bundles = {
+     'TestDemoPodSDK' => ['TestDemoPodSDK/Assets/*.{xib,storyboard}']
+   }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'

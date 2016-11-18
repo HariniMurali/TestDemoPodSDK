@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TicketsCell: UITableViewCell {
+public class TicketsCell: UITableViewCell {
 
     @IBOutlet weak var statusIndicator: UIView!
     
@@ -20,12 +20,12 @@ class TicketsCell: UITableViewCell {
     
     @IBOutlet weak var labelDate: UILabel!
     
-    override func awakeFromNib() {
+    override public func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
     }
 
-    override func setSelected(_ selected: Bool, animated: Bool) {
+    override public func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
