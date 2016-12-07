@@ -13,6 +13,7 @@
   },
   "source": {
     "git": "https://github.com/HariniMurali/TestDemoPodSDK.git",
+    "commit": "0b09ab5bb93c5905858d0958299737dc048eb099",
     "tag": "0.1.0"
   },
   "platforms": {
@@ -22,6 +23,11 @@
   "resource_bundles": {
     "TestDemoPodSDK": [
       "TestDemoPodSDK/Assets/*.{xib,storyboard}"
+    ]
+  },
+  "dependencies": {
+    "FMDB": [
+
     ]
   }
 }

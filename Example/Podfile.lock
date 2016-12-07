@@ -1,5 +1,9 @@
 PODS:
-  - TestDemoPodSDK (0.1.0)
+  - FMDB (2.6.2):
+    - FMDB/standard (= 2.6.2)
+  - FMDB/standard (2.6.2)
+  - TestDemoPodSDK (0.1.0):
+    - FMDB
 
 DEPENDENCIES:
   - TestDemoPodSDK (from `../`)
@@ -9,7 +13,8 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  TestDemoPodSDK: 743208fa0360e4219da5070fca6ec4427e7287eb
+  FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
+  TestDemoPodSDK: adb0dd726e10df943e08793f52143efa7dbef4dc
 
 PODFILE CHECKSUM: 1b25cb25c9d97a94b037445990dcf70cd6ad15cd
 

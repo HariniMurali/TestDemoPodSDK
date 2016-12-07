@@ -25,7 +25,7 @@ This is a demo for testing purpose.
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Carey Sam' => 'jcareysam@gmail.com' }
-  s.source           = { :git => 'https://github.com/HariniMurali/TestDemoPodSDK.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/HariniMurali/TestDemoPodSDK.git', :commit => '0b09ab5bb93c5905858d0958299737dc048eb099', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '8.0'
@@ -38,5 +38,5 @@ This is a demo for testing purpose.
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+    s.dependency 'FMDB'
 end

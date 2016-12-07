@@ -7,10 +7,14 @@
 //
 
 import UIKit
+import CoreData
+import FMDB
 
 public class TicketHomeController: UITableViewController {
     
     var ticketsData: [[String:String]] = []
+    
+    var databasePath = String()
 
     @IBOutlet var ticketsTable: UITableView!
     
@@ -31,6 +35,65 @@ public class TicketHomeController: UITableViewController {
         
         self.ConfigureTableView()
         
+        let filemgr = FileManager.default
+        let dirPaths = filemgr.urls(for: .documentDirectory,
+                                    in: .userDomainMask)
+        
+        self.databasePath = dirPaths[0].appendingPathComponent("contacts.db").path
+        
+        if !filemgr.fileExists(atPath: databasePath as String) {
+            
+            let contactDB = FMDatabase(path: databasePath as String)
+            
+            if contactDB == nil {
+                print("Error: \(contactDB?.lastErrorMessage())")
+            }
+            
+            if (contactDB?.open())! {
+                let sql_stmt = "CREATE TABLE IF NOT EXISTS CONTACTS (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT, ADDRESS TEXT, PHONE TEXT)"
+                if !(contactDB?.executeStatements(sql_stmt))! {
+                    print("Error: \(contactDB?.lastErrorMessage())")
+                }
+                contactDB?.close()
+            } else {
+                print("Error: \(contactDB?.lastErrorMessage())")
+            }
+        }
+        
+        let contactDB = FMDatabase(path: databasePath as String)
+        
+        if (contactDB?.open())! {
+            
+            let insertSQL = "INSERT INTO CONTACTS (name, address, phone) VALUES ('TestName', 'Address', '9876543210')"
+            
+            let result = contactDB?.executeUpdate(insertSQL,
+                                                  withArgumentsIn: nil)
+            
+            if !result! {
+                print("Error: \(contactDB?.lastErrorMessage())")
+            }
+        } else {
+            print("Error: \(contactDB?.lastErrorMessage())")
+        }
+        
+        if (contactDB?.open())! {
+            let querySQL = "SELECT id, address, phone FROM CONTACTS"
+            
+            let results:FMResultSet? = contactDB?.executeQuery(querySQL,
+                                                               withArgumentsIn: nil)
+            
+            
+            while results?.next() == true {
+                print(results?.int(forColumn: "ID"))
+                print(results?.string(forColumn: "address"))
+                print(results?.string(forColumn: "phone"))
+            }
+            contactDB?.close()
+        } else {
+            print("Error: \(contactDB?.lastErrorMessage())")
+        }
+        
+        //self.saveData()
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -83,12 +146,15 @@ public class TicketHomeController: UITableViewController {
     func ConfigureTableView() {
         self.ticketsTable.delegate = self
         self.ticketsTable.dataSource = self
+        
         let frameworkBundle = Bundle(for:  TicketHomeController.self)
         let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
         let resourceBundle = Bundle(url: bundleURL!)
+
         self.ticketsTable.register(UINib(nibName: "TicketCell", bundle: resourceBundle), forCellReuseIdentifier: "singleCell")
         self.ticketsTable.rowHeight = 100.0
     }
+    
 
     /*
     // Override to support conditional editing of the table view.
