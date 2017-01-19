@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FMDB
 
 class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -95,11 +96,11 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                 
                 OperationQueue.main.addOperation {
                     self.present(alertController!,animated: true, completion: nil)
-                    
-                    return
-                    
                 }
+                
+                return
             }
+            
         }
         
         if (!txtEmail.isHidden)
@@ -117,10 +118,8 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                 
                 OperationQueue.main.addOperation {
                     self.present(alertController!,animated: true, completion: nil)
-                    
-                    return
-                    
                 }
+                return
             }
         }
             
@@ -139,10 +138,9 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             OperationQueue.main.addOperation {
                 self.present(alertController!,animated: true, completion: nil)
-                
-                return
-                
             }
+            
+            return
         }
         
         if (ticketMessage.text.isEmpty)
@@ -158,10 +156,8 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             OperationQueue.main.addOperation {
                 self.present(alertController!,animated: true, completion: nil)
-                
-                return
-                
             }
+            return
         }
         
         if departmentDropDown.currentTitle! == "Please select"
@@ -177,10 +173,8 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             OperationQueue.main.addOperation {
                 self.present(alertController!,animated: true, completion: nil)
-                
-                return
-                
             }
+            return
         }
         
         if priorityDropDown.currentTitle! == "Please select"
@@ -196,10 +190,8 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             OperationQueue.main.addOperation {
                 self.present(alertController!,animated: true, completion: nil)
-                
-                return
-                
             }
+            return
         }
         
         if typeDropDown.currentTitle! == "Please select"
@@ -215,10 +207,8 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             OperationQueue.main.addOperation {
                 self.present(alertController!,animated: true, completion: nil)
-                
-                return
-                
             }
+            return
         }
         
         if (!txtName.isHidden)
@@ -227,12 +217,17 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                 results in
             
             
-                if ((self.imageView.image) != nil)
+                if ((self.imageView.image) != nil && self.hasImageChanged)
                 {
-                    print("Image Upload")
                     self.myImageUploadRequest(ImageFile: self.imageView.image!)
                 }
-                print("View Controller: \(results)")
+                
+                
+                if (self.isSuccessfull != "null")
+                {
+                    self.navigationController?.popViewController(animated: true)
+                }
+                
             }
         }
         else
@@ -241,12 +236,16 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                 results in
                 
                 
-                if ((self.imageView.image) != nil)
+                if ((self.imageView.image) != nil && self.hasImageChanged)
                 {
-                    print("Image Upload")
                     self.myImageUploadRequest(ImageFile: self.imageView.image!)
                 }
-                print("View Controller: \(results)")
+                
+                if (self.isSuccessfull != "null")
+                {
+                    self.navigationController?.popViewController(animated: true)
+                }
+
             }
         
         }
@@ -254,6 +253,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
     }
     
+    let constants = Constants()
     
     let depDropDown = DropDown()
     
@@ -282,8 +282,20 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
     var newTicketID : String = ""
     
     var newTicketNumber : String = ""
+    
+    var isEdit : Bool = false
+    
+    var hasImageChanged : Bool = false
+    
+    var editTicketID : String! = ""
+    
+    var pageTitle : String! = ""
+    
+    var isSuccessfull : String! = ""
 
     let imagePicker = UIImagePickerController()
+    
+    let defaults = UserDefaults.standard
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -293,7 +305,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "Create Ticket"
+        self.title = self.pageTitle
         
         ticketMessage.layer.borderColor = UIColor(red: CGFloat(204.0 / 255.0), green: CGFloat(204.0 / 255.0), blue: CGFloat(204.0 / 255.0), alpha: CGFloat(1.0)).cgColor
         ticketMessage.layer.borderWidth = 1.0
@@ -301,9 +313,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         imagePicker.delegate = self
         
-        let defaults = UserDefaults.standard
-        
-        let userID = defaults.value(forKey: "userID")
+        let userID = defaults.value(forKey: "userMail")
         
         if (userID != nil)
         {
@@ -315,14 +325,87 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             txtEmailHeight.priority = 1000
         }
         
+        self.initializeDatabase()
         
         self.scrollView.isScrollEnabled = true
         self.scrollView.frame = self.view.bounds
-        //self.scrollView.contentSize = self.view.bounds.size
-        
+
         self.loadDropdownData(){
             results in
-            print("View Controller: \(results)")
+
+            if(self.isEdit)
+            {
+                let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+                
+                if (dbObj?.open())! {
+                    let querySQL = "SELECT ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_name, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date FROM TABLE_TICKET WHERE ticket_id = '\(self.editTicketID!)'"
+                    
+                    let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                   withArgumentsIn: nil)
+                    
+                    
+                    while results?.next() == true {
+                        
+                        var ticketSubject: String! = results?.string(forColumn: "ticket_subject")
+                        
+                        var ticketDescription: String! = results?.string(forColumn: "ticket_description")
+                        
+                        var departmentID: String! = results?.string(forColumn: "department_id")
+                    
+                        var priorityID: String! = results?.string(forColumn: "priority_id")
+                        
+                        var typeID: String! = results?.string(forColumn: "type_id")
+                        
+                        var ticketAttachementURL : String! = results?.string(forColumn: "ticket_attachment")
+                        
+                        if(ticketAttachementURL != "null")
+                        {
+                            
+                            if let checkedUrl = URL(string: ticketAttachementURL) {
+                                self.imageView.contentMode = .scaleAspectFit
+                                self.downloadImage(url: checkedUrl)
+                            }
+                            
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self.txtSubject.text = ticketSubject
+                            self.ticketMessage.text = ticketDescription
+                            
+                            
+                            if let depIndex = self.departmentIDArray.index(of: departmentID) {
+                                self.depDropDown.selectRow(at: depIndex)
+                                self.selectedDepartmentID = self.departmentIDArray[depIndex]
+                                self.departmentDropDown.setTitle(self.departmentArray[depIndex], for: .normal)
+                            }
+
+                            
+                            if let priorIndex = self.priorityIDArray.index(of: priorityID) {
+                                self.priorDropDown.selectRow(at: priorIndex)
+                                self.selectedPriorityID = self.priorityIDArray[priorIndex]
+                                self.priorityDropDown.setTitle(self.priorityArray[priorIndex], for: .normal)
+                            }
+
+                            if let typIndex = self.typeIDArray.index(of: typeID) {
+                                self.typDropDown.selectRow(at: typIndex)
+                                self.selectedTypeID = self.typeIDArray[typIndex]
+                                self.typeDropDown.setTitle(self.typeArray[typIndex], for: .normal)
+                            }
+
+                            
+                            
+                            
+                            
+                        }
+                        
+                        
+                        
+                    }
+                    dbObj?.close()
+                } else {
+                    print("Error: \(dbObj?.lastErrorMessage())")
+                }
+            }
         }
 
 
@@ -335,7 +418,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         self.priorDropDown.anchorView = priorityDropDown
         
-        //self.priorDropDown.dataSource = ["Normal", "High", "Very High"]
+        
         
         self.priorDropDown.selectionAction = { [unowned self] (index, item) in
             self.selectedPriorityID = self.priorityIDArray[index]
@@ -344,21 +427,49 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         self.typDropDown.anchorView = typeDropDown
         
-        //self.typDropDown.dataSource = ["Question", "Bug", "customisation"]
+        
         
         self.typDropDown.selectionAction = { [unowned self] (index, item) in
             self.selectedTypeID = self.typeIDArray[index]
-            print(self.selectedTypeID)
             self.typeDropDown.setTitle(item, for: .normal)
         }
- 
         
-        // Do any additional setup after loading the view.
+        
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    }
+    
+    func initializeDatabase()
+    {
+        let filemgr = FileManager.default
+        let dirPaths = filemgr.urls(for: .documentDirectory,
+                                    in: .userDomainMask)
+        
+        let databasePath = dirPaths[0].appendingPathComponent("database.db").path
+        
+        defaults.set(String(databasePath), forKey: "databasePath")
+        
+        let dbObj = FMDatabase(path: defaults.value(forKey: "databasePath") as! String)
+        
+        if dbObj == nil {
+            print("Error: \(dbObj?.lastErrorMessage())")
+        }
+        
+        if (dbObj?.open())!
+        {
+            let sql_stmt = "CREATE TABLE IF NOT EXISTS DROPDOWNDATA (ID INTEGER PRIMARY KEY AUTOINCREMENT, TYPE INTEGER, SERVERID TEXT, NAME TEXT, STATUS TEXT, PARENTID TEXT)"
+            if !(dbObj?.executeStatements(sql_stmt))! {
+                print("Error: \(dbObj?.lastErrorMessage())")
+            }
+            dbObj?.close()
+        }
+        else
+        {
+            print("Error: \(dbObj?.lastErrorMessage())")
+        }
+
     }
     
     func loadDropdownData(completionHandler: @escaping (_ results: String) -> ())
@@ -366,17 +477,15 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         let defaultSession = URLSession(configuration: URLSessionConfiguration.ephemeral)
         
-        let constants = Constants()
-        
         
         let url = URL(string: constants.AppUrl+"ticketlookup")!
         var request = URLRequest(url: url)
         request.addValue("text/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
         
-        
         let jsonObject: [String: String] = [
-            "apikey":constants.APIKey,
+            "apikey": HSConfig.getAPIKey(),
+            "datetime": String(describing: defaults.value(forKey: "ddDateTime")) == "nil" ? "" : String(describing: defaults.value(forKey: "ddDateTime")!)
         ]
         
         var data : AnyObject
@@ -390,8 +499,6 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             let strData = NSString(data: (data as! NSData) as Data, encoding: String.Encoding.utf8.rawValue)! as String
             
-            print(strData)
-            
             data = strData.data(using: String.Encoding.utf8)! as AnyObject
             
             
@@ -404,7 +511,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                         
                         
                         let alertController:UIAlertController? = UIAlertController(title: "",
-                                                                                   message: "Error in Registration",
+                                                                                   message: "Error loading ticket details",
                                                                                    preferredStyle: .alert)
                         
                         let alertAction = UIAlertAction(title: "Okay",style: .default,
@@ -413,7 +520,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                         alertController!.addAction(alertAction)
                         
                         
-                        //self.presentViewController(alertController!,animated: true, completion: nil)
+                        self.present(alertController!,animated: true, completion: nil)
                         
                         
                         return
@@ -421,37 +528,184 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                     
                     let json = JSON(data: data!)
                     
-                    print(json["tickettype"])
+                    self.defaults.set(String(describing: json["datetime"]["CurrentDateTime"]), forKey: "ddDateTime")
+                    
+                    let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+                    
+                    
+                    if json["department"].count > 0
+                    {
+                        if (dbObj?.open())! {
+                            
+                            let deleteSQL = "DELETE FROM DROPDOWNDATA WHERE TYPE = 1"
+                            
+                            let result = dbObj?.executeUpdate(deleteSQL,
+                                                              withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                    }
                     
                     for i in 0..<json["department"].count
                     {
                         
-                        self.departmentArray.append(String(describing: json["department"][i]["department_name"]))
+                        if (dbObj?.open())! {
+                            
+                            let insertSQL = "INSERT INTO DROPDOWNDATA (type, serverid, name, status) VALUES (1, '\(String(describing: json["department"][i]["department_id"]))', '\(String(describing: json["department"][i]["department_name"]))','')"
+                            
+                            let result = dbObj?.executeUpdate(insertSQL,
+                                                                  withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
                         
-                        self.departmentIDArray.append(String(describing: json["department"][i]["department_id"]))
+                        
                     }
                     
+                    if (dbObj?.open())! {
+                        let querySQL = "SELECT serverid, name FROM DROPDOWNDATA WHERE TYPE = 1"
+                        
+                        let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                           withArgumentsIn: nil)
+                        
+                        
+                        while results?.next() == true {
+                            
+                            self.departmentArray.append((results?.string(forColumn: "name"))!)
+                            
+                            self.departmentIDArray.append((results?.string(forColumn: "serverid"))!)
+                            
+                        }
+                        dbObj?.close()
+                    } else {
+                        print("Error: \(dbObj?.lastErrorMessage())")
+                    }
+
+                    
                     self.depDropDown.dataSource = self.departmentArray
+                    
+                    if json["priority"].count > 0
+                    {
+                        if (dbObj?.open())! {
+                            
+                            let deleteSQL = "DELETE FROM DROPDOWNDATA WHERE TYPE = 2"
+                            
+                            let result = dbObj?.executeUpdate(deleteSQL,
+                                                              withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                    }
                     
                     for i in 0..<json["priority"].count
                     {
                         
-                        self.priorityArray.append(String(describing: json["priority"][i]["priority_name"]))
+                        if (dbObj?.open())! {
+                            
+                            let insertSQL = "INSERT INTO DROPDOWNDATA (type, serverid, name, status) VALUES (2, '\(String(describing: json["priority"][i]["id"]))', '\(String(describing: json["priority"][i]["priority_name"]))','')"
+                            
+                            let result = dbObj?.executeUpdate(insertSQL,
+                                                              withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
                         
-                        self.priorityIDArray.append(String(describing: json["priority"][i]["id"]))
+                        
                     }
                     
+                    if (dbObj?.open())! {
+                        let querySQL = "SELECT serverid, name FROM DROPDOWNDATA WHERE TYPE = 2"
+                        
+                        let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                       withArgumentsIn: nil)
+                        
+                        
+                        while results?.next() == true {
+                            
+                            self.priorityArray.append((results?.string(forColumn: "name"))!)
+                            
+                            self.priorityIDArray.append((results?.string(forColumn: "serverid"))!)
+                            
+                        }
+                        dbObj?.close()
+                    } else {
+                        print("Error: \(dbObj?.lastErrorMessage())")
+                    }
                     
                     self.priorDropDown.dataSource = self.priorityArray
+                    
+                    if json["tickettype"].count > 0
+                    {
+                        if (dbObj?.open())! {
+                            
+                            let deleteSQL = "DELETE FROM DROPDOWNDATA WHERE TYPE = 3"
+                            
+                            let result = dbObj?.executeUpdate(deleteSQL,
+                                                              withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                    }
                     
                     for i in 0..<json["tickettype"].count
                     {
                         
-                        self.typeArray.append(String(describing: json["tickettype"][i]["type_name"]))
+                        if (dbObj?.open())! {
+                            
+                            let insertSQL = "INSERT INTO DROPDOWNDATA (type, serverid, name, status) VALUES (3, '\(String(describing: json["tickettype"][i]["ticket_type_id"]))', '\(String(describing: json["tickettype"][i]["type_name"]))','')"
+                            
+                            let result = dbObj?.executeUpdate(insertSQL,
+                                                              withArgumentsIn: nil)
+                            
+                            if !result! {
+                                print("Error: \(dbObj?.lastErrorMessage())")
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
                         
-                        self.typeIDArray.append(String(describing: json["tickettype"][i]["ticket_type_id"]))
+                        
                     }
                     
+                    if (dbObj?.open())! {
+                        let querySQL = "SELECT serverid, name FROM DROPDOWNDATA WHERE TYPE = 3"
+                        
+                        let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                       withArgumentsIn: nil)
+                        
+                        
+                        while results?.next() == true {
+                            
+                            self.typeArray.append((results?.string(forColumn: "name"))!)
+                            
+                            self.typeIDArray.append((results?.string(forColumn: "serverid"))!)
+                            
+                        }
+                        dbObj?.close()
+                    } else {
+                        print("Error: \(dbObj?.lastErrorMessage())")
+                    }
+
                     
                     self.typDropDown.dataSource = self.typeArray
                     
@@ -476,8 +730,6 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         let defaultSession = URLSession(configuration: URLSessionConfiguration.ephemeral)
         
-        let constants = Constants()
-        
         
         let url = URL(string: constants.AppUrl+"ticket")!
         var request = URLRequest(url: url)
@@ -486,12 +738,13 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         
         let jsonObject: [String: String] = [
-            "apikey":constants.APIKey,
+            "apikey": HSConfig.getAPIKey(),
             "requestername": requesterName,
             "email": emailID,
             "subject": subject,
             "message": message,
-            "action":"add",
+            "action": isEdit ? "update" : "add",
+            "ticket_id": self.editTicketID,
             "ticket_type_id": typeID,
             "ticket_priority_id": priorityID,
             "assign_department_id": departmentID
@@ -508,8 +761,6 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             
             let strData = NSString(data: (data as! NSData) as Data, encoding: String.Encoding.utf8.rawValue)! as String
             
-            print(strData)
-            
             data = strData.data(using: String.Encoding.utf8)! as AnyObject
             
             
@@ -522,7 +773,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                         
                         
                         let alertController:UIAlertController? = UIAlertController(title: "",
-                                                                                   message: "Error in Registration",
+                                                                                   message: "Error creating ticket",
                                                                                    preferredStyle: .alert)
                         
                         let alertAction = UIAlertAction(title: "Okay",style: .default,
@@ -531,36 +782,38 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                         alertController!.addAction(alertAction)
                         
                         
-                        //self.presentViewController(alertController!,animated: true, completion: nil)
+                        self.present(alertController!,animated: true, completion: nil)
                         
                         
                         return
                     }
                     
                     let json = JSON(data: data!)
-                    
-                    print(json)
-                    
+
                     let defaults = UserDefaults.standard
                     
-                    let userID = String(describing: json["response"]["user"]["user_id"])
+                    let userID = String(describing: json["response"]["user"][0]["user_id"])
                     
-                    self.newTicketID = String(describing: json["response"]["ticket"]["ticket_id"])
                     
-                    self.newTicketNumber = String(describing: json["response"]["ticket"]["ticket_no"])
+                    String(describing: json["SUCCESS"])
                     
-                    print("UserID "+userID)
+                    self.isSuccessfull = String(describing: json["SUCCESS"])
                     
-                    print("Ticket ID"+self.newTicketID)
+                    self.newTicketID = String(describing: json["response"]["ticket"][0]["ticket_id"])
                     
-                    print("Ticket No."+self.newTicketNumber)
+                    if (self.isEdit)
+                    {
+                        self.newTicketNumber = String(describing: json["response"]["ticket"]["ticket_no"])
+                    }
+                    else
+                    {
+                        self.newTicketNumber = String(describing: json["response"]["ticket"][0]["ticket_no"])
+                    
+                    }
                     
                     if (!userID.isEmpty && userID != "null" )
                     {
-                        print("User ID saved")
                         defaults.set(userID, forKey: "userID")
-                        
-                        
                     }
                     
                     if (!self.txtName.isHidden)
@@ -588,7 +841,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            
+            self.hasImageChanged = true
             imageView.contentMode = .scaleAspectFit
             imageView.image = pickedImage
             
@@ -598,23 +851,23 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        imageView.image = nil
         dismiss(animated: true, completion: nil)
     }
     
     func myImageUploadRequest(ImageFile: UIImage)
     {
-        let constants = Constants()
         let myUrl = NSURL(string: constants.AppUrl+"ticketattachment");
         
         let request = NSMutableURLRequest(url:myUrl! as URL);
         request.httpMethod = "POST";
         
-        let param = [
-            "apikey": constants.APIKey,
+        let param : [String : String] = [
+            "apikey": HSConfig.getAPIKey(),
             "ticket_no": self.newTicketNumber,
-            "ticket_id": self.newTicketID
+            "ticket_id": isEdit ? self.editTicketID : self.newTicketID
         ]
-        
+
         let boundary = generateBoundaryString()
         
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -622,11 +875,9 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         let imageData = UIImageJPEGRepresentation(ImageFile, 1)
         
-        //var imageData = CIImage(image: ImageFile)
-        
         if(imageData==nil)  { return; }
         
-        request.httpBody = createBodyWithParameters(parameters: param, filePathKey: "file", imageDataKey: imageData! as NSData, boundary: boundary) as Data
+        request.httpBody = createBodyWithParameters(parameters: param, filePathKey: "file", imageDataKey: imageData! as NSData, boundary: boundary)
         
         
         let task = URLSession.shared.dataTask(with: request as URLRequest) {
@@ -637,12 +888,43 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
                 return
             }
             
-            // You can print out response object
-            print("******* response = \(response)")
+            let json = JSON(data: data!)
+
             
-            // Print out reponse body
+            let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+            
+            if (dbObj?.open())! {
+                
+                let insertSQL = "UPDATE TABLE_TICKET SET ticket_attachment = '\(json["SUCCESS"])' WHERE ticket_id ='\(self.newTicketID)'"
+                
+                let result = dbObj?.executeUpdate(insertSQL,
+                                                  withArgumentsIn: nil)
+                
+                if !result! {
+                    print("Error: \(dbObj?.lastErrorMessage())")
+                }
+            } else {
+                print("Error: \(dbObj?.lastErrorMessage())")
+            }
+            
+            if (dbObj?.open())! {
+                let querySQL = "SELECT ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_id, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date FROM TABLE_TICKET WHERE ticket_id ='\(self.newTicketID)'"
+                
+                let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                               withArgumentsIn: nil)
+                
+                
+                while results?.next() == true {
+                    print(results?.string(forColumn: "ticket_attachment"))
+                    print(results?.string(forColumn: "ticket_description"))
+                    print(results)
+                }
+                dbObj?.close()
+            } else {
+                print("Error: \(dbObj?.lastErrorMessage())")
+            }
+            
             let responseString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
-            print("****** response data = \(responseString!)")
             
             
         }
@@ -657,7 +939,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
     
     
     
-    func createBodyWithParameters(parameters: [String: String]?, filePathKey: String?, imageDataKey: NSData, boundary: String) -> NSData {
+    func createBodyWithParameters(parameters: [String: String]?, filePathKey: String?, imageDataKey: NSData, boundary: String) -> Data {
         var body = NSMutableData();
         
         
@@ -669,7 +951,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
             }
         }
         
-        let filename = "file"
+        let filename = randomString(length: 10)
         
         let mimetype = "image/jpg"
         
@@ -683,7 +965,7 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         
         body.append("--\(boundary)--\r\n".data(using: String.Encoding.utf8)!)
         
-        return body
+        return body as Data
     }
     
     func isValidEmail(testStr:String) -> Bool {
@@ -693,15 +975,39 @@ class NewTicketController: UIViewController, UIImagePickerControllerDelegate, UI
         let emailTest = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailTest.evaluate(with: testStr)
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    
+    func downloadImage(url: URL) {
+        getDataFromUrl(url: url) { (data, response, error)  in
+            guard let data = data, error == nil else { return }
+            DispatchQueue.main.async() { () -> Void in
+                self.imageView.image = UIImage(data: data)
+            }
+        }
     }
-    */
+    
+    func getDataFromUrl(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
+        URLSession.shared.dataTask(with: url) {
+            (data, response, error) in
+            completion(data, response, error)
+            }.resume()
+    }
+    
+    func randomString(length: Int) -> String {
+        
+        let letters : NSString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let len = UInt32(letters.length)
+        
+        var randomString = ""
+        
+        for _ in 0 ..< length {
+            let rand = arc4random_uniform(len)
+            var nextChar = letters.character(at: Int(rand))
+            randomString += NSString(characters: &nextChar, length: 1) as String
+        }
+        
+        return randomString
+    }
+
+
 
 }

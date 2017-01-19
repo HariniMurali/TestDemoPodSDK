@@ -1,8 +1,10 @@
 PODS:
+  - Cosmos (7.0.0)
   - FMDB (2.6.2):
     - FMDB/standard (= 2.6.2)
   - FMDB/standard (2.6.2)
-  - TestDemoPodSDK (0.1.0):
+  - TestDemoPodSDK (0.2.0):
+    - Cosmos
     - FMDB
 
 DEPENDENCIES:
@@ -13,8 +15,9 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
+  Cosmos: 2c8299147138758f6ebbb247cf1aeed77998bdf9
   FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
-  TestDemoPodSDK: adb0dd726e10df943e08793f52143efa7dbef4dc
+  TestDemoPodSDK: 6f376367cc1325e01258681af23412560061e5b2
 
 PODFILE CHECKSUM: 1b25cb25c9d97a94b037445990dcf70cd6ad15cd
 

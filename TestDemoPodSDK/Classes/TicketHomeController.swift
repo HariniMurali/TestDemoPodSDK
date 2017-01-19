@@ -15,115 +15,221 @@ public class TicketHomeController: UITableViewController {
     var ticketsData: [[String:String]] = []
     
     var databasePath = String()
+    
+    let defaults = UserDefaults.standard
+    
+    let constants = Constants()
+    
+    var selectedTicketID: String! = ""
 
     @IBOutlet var ticketsTable: UITableView!
+    
+    @IBAction func onAddPressed(sender: UIBarButtonItem) {
+        
+        let frameworkBundle = Bundle(for:  TicketHomeController.self)
+        let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
+        let resourceBundle = Bundle(url: bundleURL!)
+        let storyboard = UIStoryboard(name: "Ticket", bundle: resourceBundle)
+        let controller = storyboard.instantiateViewController(withIdentifier: "InitialController") as! UINavigationController
+        
+        var viewController = controller.topViewController as! NewTicketController
+        
+        viewController.pageTitle = "Create Ticket"
+        self.navigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    override public func viewDidAppear(_ animated: Bool)
+    {
+        
+        super.viewDidAppear(animated)
+        self.ticketsData = []
+        self.initializeDatabase()
+        self.ticketsTable.reloadData()
+        
+        self.navigationController?.isToolbarHidden = true
+        
+        self.ConfigureTableView()
+        
+        if(self.defaults.value(forKey: "userName") == nil || self.defaults.value(forKey: "userMail") == nil)
+        {
+            
+            var alertController = UIAlertController(title: "Login", message: "Input name and email address", preferredStyle: .alert)
+            
+            alertController.addTextField(configurationHandler: {(_ textField: UITextField) -> Void in
+                textField.placeholder = "Name"
+                textField.textColor = UIColor.black
+                textField.clearButtonMode = .whileEditing
+                textField.borderStyle = .roundedRect
+            })
+            
+            
+            alertController.addTextField(configurationHandler: {(_ textField: UITextField) -> Void in
+                textField.placeholder = "Email Address"
+                textField.textColor = UIColor.black
+                textField.clearButtonMode = .whileEditing
+                textField.borderStyle = .roundedRect
+            })
+            
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: {(_ action: UIAlertAction) -> Void in
+                var textfields = alertController.textFields
+                var namefield = textfields?[0]
+                var emailfield = textfields?[1]
+                
+                
+                if(namefield?.text! == "" || emailfield?.text! == "" || !self.isValidEmail(testStr: (emailfield?.text!)!))
+                {
+                    self.present(alertController, animated: true, completion: { _ in })
+                }
+                else
+                {
+                    var name : String! = namefield!.text!
+                    var email : String! = emailfield!.text!
+                    
+                    self.defaults.set(name!, forKey: "userName")
+                    self.defaults.set(email!, forKey: "userMail")
+                    
+                    self.downloadTickets(){
+                        results in
+                        
+                        let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+                        
+                        if (dbObj?.open())! {
+                            let querySQL = "SELECT ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_name, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date FROM TABLE_TICKET"
+                            
+                            let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                           withArgumentsIn: nil)
+                            
+                            
+                            while results?.next() == true {
+                                
+                                
+                                let jsonObject: [String: String] = [
+                                    "Requester": "Carey sam",
+                                    "TicketID" : (results?.string(forColumn: "ticket_id"))!,
+                                    "Status" : self.constants.TicketStatus[Int((results?.string(forColumn: "ticket_status"))!)!],
+                                    "Title" : (results?.string(forColumn: "ticket_subject"))!,
+                                    "Date": (results?.string(forColumn: "ticket_date"))!
+                                ]
+                                
+                                self.ticketsData.append(jsonObject)
+                                
+ 
+                            }
+                            dbObj?.close()
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self.ticketsTable.reloadData()
+                        }
+                        
+                    }
+                    
+                }
+                
+            }))
+            self.present(alertController, animated: true, completion: { _ in })
+        }
+        
+        if (HSConfig.isInternetAvailable())
+        {
+        
+            self.downloadTickets(){
+                results in
+            
+                let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+            
+                if (dbObj?.open())! {
+                    let querySQL = "SELECT ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_name, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date FROM TABLE_TICKET"
+                
+                    let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                               withArgumentsIn: nil)
+                
+                
+                    while results?.next() == true {
+                    
+                        let jsonObject: [String: String] = [
+                            "Requester": "Carey sam",
+                            "TicketID" : (results?.string(forColumn: "ticket_id"))!,
+                            "Status" : self.constants.TicketStatus[Int((results?.string(forColumn: "ticket_status"))!)!],
+                            "Title" : (results?.string(forColumn: "ticket_subject"))!,
+                            "Date": (results?.string(forColumn: "ticket_date"))!
+                        ]
+                    
+                        self.ticketsData.append(jsonObject)
+                    
+                    }
+                    dbObj?.close()
+                } else {
+                    print("Error: \(dbObj?.lastErrorMessage())")
+                }
+            
+                DispatchQueue.main.async {
+                    self.ticketsTable.reloadData()
+                }
+            
+            }
+        }else
+        {
+            let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+            
+            if (dbObj?.open())! {
+                let querySQL = "SELECT ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_name, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date FROM TABLE_TICKET"
+                
+                let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                               withArgumentsIn: nil)
+                
+                
+                while results?.next() == true {
+                    
+                    let jsonObject: [String: String] = [
+                        "Requester": "Carey sam",
+                        "TicketID" : (results?.string(forColumn: "ticket_id"))!,
+                        "Status" : self.constants.TicketStatus[Int((results?.string(forColumn: "ticket_status"))!)!],
+                        "Title" : (results?.string(forColumn: "ticket_subject"))!,
+                        "Date": (results?.string(forColumn: "ticket_date"))!
+                    ]
+                    
+                    self.ticketsData.append(jsonObject)
+                    
+                }
+                dbObj?.close()
+            } else {
+                print("Error: \(dbObj?.lastErrorMessage())")
+            }
+            
+            DispatchQueue.main.async {
+                self.ticketsTable.reloadData()
+            }
+        }
+        
+        
+        
+    }
     
     override public func viewDidLoad() {
         super.viewDidLoad()
         
-        for _ in 0 ..< 3
-        {
-        let jsonObject: [String: String] = [
-            "Requester": "Carey sam",
-            "Status" : "Open",
-            "Title" : "This is test ticket",
-            "Date": "16/11/16"
-        ]
-        
-        ticketsData.append(jsonObject)
-        }
-        
-        self.ConfigureTableView()
-        
-        let filemgr = FileManager.default
-        let dirPaths = filemgr.urls(for: .documentDirectory,
-                                    in: .userDomainMask)
-        
-        self.databasePath = dirPaths[0].appendingPathComponent("contacts.db").path
-        
-        if !filemgr.fileExists(atPath: databasePath as String) {
-            
-            let contactDB = FMDatabase(path: databasePath as String)
-            
-            if contactDB == nil {
-                print("Error: \(contactDB?.lastErrorMessage())")
-            }
-            
-            if (contactDB?.open())! {
-                let sql_stmt = "CREATE TABLE IF NOT EXISTS CONTACTS (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT, ADDRESS TEXT, PHONE TEXT)"
-                if !(contactDB?.executeStatements(sql_stmt))! {
-                    print("Error: \(contactDB?.lastErrorMessage())")
-                }
-                contactDB?.close()
-            } else {
-                print("Error: \(contactDB?.lastErrorMessage())")
-            }
-        }
-        
-        let contactDB = FMDatabase(path: databasePath as String)
-        
-        if (contactDB?.open())! {
-            
-            let insertSQL = "INSERT INTO CONTACTS (name, address, phone) VALUES ('TestName', 'Address', '9876543210')"
-            
-            let result = contactDB?.executeUpdate(insertSQL,
-                                                  withArgumentsIn: nil)
-            
-            if !result! {
-                print("Error: \(contactDB?.lastErrorMessage())")
-            }
-        } else {
-            print("Error: \(contactDB?.lastErrorMessage())")
-        }
-        
-        if (contactDB?.open())! {
-            let querySQL = "SELECT id, address, phone FROM CONTACTS"
-            
-            let results:FMResultSet? = contactDB?.executeQuery(querySQL,
-                                                               withArgumentsIn: nil)
-            
-            
-            while results?.next() == true {
-                print(results?.int(forColumn: "ID"))
-                print(results?.string(forColumn: "address"))
-                print(results?.string(forColumn: "phone"))
-            }
-            contactDB?.close()
-        } else {
-            print("Error: \(contactDB?.lastErrorMessage())")
-        }
-        
-        //self.saveData()
-        
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
 
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
 
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
-    // MARK: - Table view data source
 
     override public func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return ticketsData.count
     }
 
     
     override public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "singleCell", for: indexPath) as! TicketsCell
-        
-        cell.labelRequester.text = ticketsData[indexPath.row]["Requester"]
         
         cell.labelStatus.text = ticketsData[indexPath.row]["Status"]
         
@@ -132,15 +238,25 @@ public class TicketHomeController: UITableViewController {
         cell.labelDate.text = ticketsData[indexPath.row]["Date"]
         
         cell.statusIndicator.backgroundColor = UIColor.red
+        
+        cell.ticketID = ticketsData[indexPath.row]["TicketID"]
+        
+        cell.preservesSuperviewLayoutMargins = false
+        cell.separatorInset = UIEdgeInsets.zero
+        cell.layoutMargins = UIEdgeInsets.zero
 
-        // Configure the cell...
-        /*
-        let s = NSMutableAttributedString(string: ticketsData[indexPath.row]["Status"]!)
-        s.addAttribute(NSBackgroundColorAttributeName, value: UIColor.gray, range: NSRange(location: 0, length: s.length))
-        cell.labelStatus.attributedText = s
-        */
         
         return cell
+    }
+    
+    override public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        
+        let cell = tableView.cellForRow(at: indexPath) as! TicketsCell
+        
+        self.selectedTicketID = cell.ticketID
+        
+    
+        self.performSegue(withIdentifier: "ticketDetailSegue", sender: tableView)
     }
 
     func ConfigureTableView() {
@@ -155,50 +271,231 @@ public class TicketHomeController: UITableViewController {
         self.ticketsTable.rowHeight = 100.0
     }
     
+    func initializeDatabase()
+    {
+        let filemgr = FileManager.default
+        let dirPaths = filemgr.urls(for: .documentDirectory,
+                                    in: .userDomainMask)
+        
+        let databasePath = dirPaths[0].appendingPathComponent("database.db").path
+        
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+        defaults.set(String(databasePath), forKey: "databasePath")
+        
+        let dbObj = FMDatabase(path: defaults.value(forKey: "databasePath") as! String)
+        
+        if dbObj == nil {
+            print("Error: \(dbObj?.lastErrorMessage())")
+        }
+        
+        if (dbObj?.open())!
+        {
+            let sql_stmt = "CREATE TABLE IF NOT EXISTS TABLE_TICKET (ID INTEGER PRIMARY KEY AUTOINCREMENT, TICKET_SUBJECT TEXT, TICKET_DESCRIPTION TEXT, DEPARTMENT_ID TEXT, PRIORITY_ID TEXT NOT NULL, TYPE_ID TEXT NOT NULL, TICKET_ATTACHMENT TEXT, STAFF_NAME TEXT NOT NULL, TICKET_NO TEXT NOT NULL, TICKET_ID TEXT NOT NULL, TICKET_STATUS TEXT NOT NULL,TICKET_OFFLINE_FLAG TEXT NOT NULL,TICKET_DATE TEXT NOT NULL, TICKET_UPDATE_TIME TEXT )"
+            if !(dbObj?.executeStatements(sql_stmt))! {
+                print("Error: \(dbObj?.lastErrorMessage())")
+            }
+            dbObj?.close()
+        }
+        else
+        {
+            print("Error: \(dbObj?.lastErrorMessage())")
+        }
+        
+    
     }
-    */
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    func downloadTickets(completionHandler: @escaping (_ results: String) -> ())
+    {
+        let defaultSession = URLSession(configuration: URLSessionConfiguration.ephemeral)
+        
+        let constants = Constants()
+        
+        
+        let url = URL(string: constants.AppUrl+"ticket")!
+        var request = URLRequest(url: url)
+        request.addValue("text/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        
+        
+        let jsonObject: [String: String] = [
+            "apikey": HSConfig.getAPIKey(),
+            "email": String(describing: defaults.value(forKey: "userMail")) == "nil" ? "" : String(describing: defaults.value(forKey: "userMail")!),
+            "action":"list",
+            "modified_date" : String(describing: defaults.value(forKey: "ticketSyncDateTime")) == "nil" ? "" : String(describing: defaults.value(forKey: "ticketSyncDateTime")!)
+        ]
+        
+        var data : AnyObject
+        
+        let dict = jsonObject as NSDictionary
+        do
+        {
+            
+            data = try JSONSerialization.data(withJSONObject: dict, options:.prettyPrinted) as AnyObject
+            
+            
+            let strData = NSString(data: (data as! NSData) as Data, encoding: String.Encoding.utf8.rawValue)! as String
+            
+            data = strData.data(using: String.Encoding.utf8)! as AnyObject
+            
+            
+            
+            let task = defaultSession.uploadTask(with: request, from: (data as! NSData) as Data, completionHandler:
+                {(data,response,error) in
+                    
+                    guard let _:NSData = data as NSData?, let _:URLResponse = response, error == nil else {
+                        
+                        
+                        
+                        let alertController:UIAlertController? = UIAlertController(title: "",
+                                                                                   message: "Error loading tickets",
+                                                                                   preferredStyle: .alert)
+                        
+                        let alertAction = UIAlertAction(title: "Okay",style: .default,
+                                                        handler:nil)
+                        
+                        alertController!.addAction(alertAction)
+                        
+                        
+                        self.present(alertController!,animated: true, completion: nil)
+                        
+                        
+                        return
+                    }
+                    
+                    let json = JSON(data: data!)
+                    
+                    if String(describing: json["response"]["CurrentDateTime"]) != "null"
+                    {
+                    
+                        self.defaults.set(String(describing: json["response"]["CurrentDateTime"]), forKey: "ticketSyncDateTime")
+                    }
+                        
+                    let dbObj = FMDatabase(path: self.defaults.value(forKey: "databasePath") as! String)
+                    
+                    var ticket_IDs = [String]()
+                    
+                    if json["response"]["Ticket"].count > 0
+                    {
+                    
+                        if (dbObj?.open())! {
+                            let querySQL = "SELECT ticket_id FROM TABLE_TICKET"
+                        
+                            let results:FMResultSet? = dbObj?.executeQuery(querySQL,
+                                                                       withArgumentsIn: nil)
+                        
+                        
+                            while results?.next() == true {
+                                
+                                ticket_IDs.append((results?.string(forColumn: "ticket_id"))!)
+                            
+                            }
+                            dbObj?.close()
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                    }
+                    
+                    for i in 0..<json["response"]["Ticket"].count
+                    {
+
+                        var newTicketID: String! = String(describing: json["response"]["Ticket"][i]["ticket_id"])
+                        
+                        if (dbObj?.open())!
+                        {
+                            if let existingTicket = ticket_IDs.index(of:newTicketID)
+                            {
+                                var assignedTo = String(describing: json["response"]["Ticket"][i]["first_name"])+" "+String(describing: json["response"]["Ticket"][i]["last_name"])
+                                
+                                var attachementString:String = ""
+                                
+                                for j in 0..<json["response"]["Ticket"][i]["ticket_files"].count
+                                {
+                                    attachementString = "\(attachementString)" + "\(String(describing: json["response"]["Ticket"][i]["ticket_files"][j]))" + ","
+                                }
+                                
+                                let updateSQL = "UPDATE TABLE_TICKET SET ticket_subject = '\(String(describing: json["response"]["Ticket"][i]["subject"]))', ticket_description = '\(String(describing: json["response"]["Ticket"][i]["message"]))', department_id = '\(String(describing: json["response"]["Ticket"][i]["assign_department_id"]))', priority_id = '\(String(describing: json["response"]["Ticket"][i]["ticket_priority_id"]))', type_id = '\(String(describing: json["response"]["Ticket"][i]["ticket_type_id"]))', ticket_attachment = '\(attachementString)', staff_name = '\(assignedTo)', ticket_no = '\(String(describing: json["response"]["Ticket"][i]["ticket_no"]))',  ticket_status = '\(String(describing: json["response"]["Ticket"][i]["ticket_status"]))', ticket_offline_flag = '1', ticket_date = '\(String(describing: json["response"]["Ticket"][i]["tickets_posted_date"]))' WHERE ticket_id = '\(newTicketID!)'"
+                                
+                                let result = dbObj?.executeUpdate(updateSQL,
+                                                                  withArgumentsIn: nil)
+                                
+                                if !result! {
+                                    print("Error: \(dbObj?.lastErrorMessage())")
+                                }
+
+                                
+                                
+                            }
+                            else
+                            {
+                                var assignedTo = String(describing: json["response"]["Ticket"][i]["first_name"])+" "+String(describing: json["response"]["Ticket"][i]["last_name"])
+                            
+                                var attachementString:String = ""
+                                
+                                for j in 0..<json["response"]["Ticket"][i]["ticket_files"].count
+                                {
+                                    attachementString = "\(attachementString)" + "\(String(describing: json["response"]["Ticket"][i]["ticket_files"][j]))" + ","
+                                }
+                                
+                                var attachments = String(describing: json["response"]["Ticket"][i]["ticket_files"][0])
+
+                                let insertSQL = "INSERT INTO TABLE_TICKET (ticket_subject, ticket_description, department_id, priority_id, type_id, ticket_attachment, staff_name, ticket_no, ticket_id, ticket_status, ticket_offline_flag, ticket_date, ticket_update_time) VALUES ('\(String(describing: json["response"]["Ticket"][i]["subject"]))', '\(String(describing: json["response"]["Ticket"][i]["message"]))', '\(String(describing: json["response"]["Ticket"][i]["assign_department_id"]))', '\(String(describing: json["response"]["Ticket"][i]["ticket_priority_id"]))', '\(String(describing: json["response"]["Ticket"][i]["ticket_type_id"]))', '\(attachementString)', '\(assignedTo)', '\(String(describing: json["response"]["Ticket"][i]["ticket_no"]))', '\(String(describing: json["response"]["Ticket"][i]["ticket_id"]))', '\(String(describing: json["response"]["Ticket"][i]["ticket_status"]))', '1', '\(String(describing: json["response"]["Ticket"][i]["tickets_posted_date"]))','')"
+
+                                let result = dbObj?.executeUpdate(insertSQL,
+                                                              withArgumentsIn: nil)
+                            
+                                if !result! {
+                                    print("Error: \(dbObj?.lastErrorMessage())")
+                                }
+                            }
+                        } else {
+                            print("Error: \(dbObj?.lastErrorMessage())")
+                        }
+                        
+                        
+                        
+                    }
+                    
+                    
+                    let dataString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
+                    
+                    
+                    completionHandler(dataString as! String)
+            }
+            );
+            task.resume()
+            
+            
+            
+        }catch{
+            
+        }
+
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
+    
+    func isValidEmail(testStr:String) -> Bool {
+        
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        
+        let emailTest = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return emailTest.evaluate(with: testStr)
     }
-    */
+    
 
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
+    override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        
+        let backItem = UIBarButtonItem()
+        backItem.title = "Back"
+        navigationItem.backBarButtonItem = backItem
+        
+        
+        if (segue.identifier == "ticketDetailSegue") {
+            var viewController = segue.destination as! TicketDetailController
+
+            viewController.currentTicketID = self.selectedTicketID
+        }
     }
-    */
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

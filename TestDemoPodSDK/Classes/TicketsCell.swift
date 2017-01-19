@@ -20,15 +20,15 @@ public class TicketsCell: UITableViewCell {
     
     @IBOutlet weak var labelDate: UILabel!
     
+    var ticketID:String! = ""
+    
     override public func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
     }
 
     override public func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        // Configure the view for the selected state
     }
 
 }

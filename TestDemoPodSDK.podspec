@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TestDemoPodSDK'
-  s.version          = ‘0.2.0’
+  s.version          = '0.3.0'
   s.summary          = 'A test cocoa named TestDemoPodSDK.'
 
 # This description is used to generate tags and improve search results.
@@ -33,10 +33,11 @@ This is a demo for testing purpose.
   s.source_files = 'TestDemoPodSDK/Classes/**/*'
 	
    s.resource_bundles = {
-     'TestDemoPodSDK' => ['TestDemoPodSDK/Assets/*.{xib,storyboard}']
+     'TestDemoPodSDK' => ['TestDemoPodSDK/Assets/*.{png,jpg,xib,storyboard}']
    }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
     s.dependency 'FMDB'
+    s.dependency 'Cosmos'
 end

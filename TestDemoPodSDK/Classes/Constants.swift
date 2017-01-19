@@ -11,12 +11,14 @@ import UIKit
 
 struct Constants {
     
-    internal let AppUrl: String = "http://192.168.1.249/helpsumolocal/admin/api/"
+    internal let AppUrl: String = "http://www.helpsumo.com/helpsumo/admin/api/"
     
-    //internal let AppUrl: String = "http://www.helpsumo.com/helpsumo/admin/api/"
+    internal let APIKey: String = "b545f8879a8e7e53f1744a0fb3b15b5a5842787d787be"
     
-    internal let APIKey: String = "c74e0e59220bcf430b3c4ff08340a4fa582972292b795"
-    
-    //internal let APIKey: String = "b545f8879a8e7e53f1744a0fb3b15b5a5842787d787be"
-    
+    internal let TicketStatus:[String] = ["","New", "Open", "Progress", "Fixed", "Closed", "Archive"]
 }
+
+
+
+
+    

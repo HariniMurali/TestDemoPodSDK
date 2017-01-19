@@ -13,14 +13,42 @@ class ViewController: UIViewController {
 
     @IBAction func StartPressed(_ sender: UIButton) {
         
+        HSConfig.setAPIKey(apiKey: "b545f8879a8e7e53f1744a0fb3b15b5a5842787d787be")
+        
         let frameworkBundle = Bundle(for:  TicketHomeController.self)
         let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
         let resourceBundle = Bundle(url: bundleURL!)
-        let storyboard = UIStoryboard(name: "Ticket", bundle: resourceBundle)
-        let controller = storyboard.instantiateViewController(withIdentifier: "InitialController") as UIViewController
+        let storyboard = UIStoryboard(name: "TicketList", bundle: resourceBundle)
+        let controller = storyboard.instantiateViewController(withIdentifier: "ticketsHomeController") as UIViewController
         
         self.present(controller, animated: true, completion: nil)
     }
+    
+    
+    @IBAction func FaqPressed(_ sender: UIButton) {
+        HSConfig.setAPIKey(apiKey: "b545f8879a8e7e53f1744a0fb3b15b5a5842787d787be")
+        
+        let frameworkBundle = Bundle(for:  TicketHomeController.self)
+        let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
+        let resourceBundle = Bundle(url: bundleURL!)
+        let storyboard = UIStoryboard(name: "KnowledgeBase", bundle: resourceBundle)
+        let controller = storyboard.instantiateViewController(withIdentifier: "knowledgeBoard") as UIViewController
+        
+        self.present(controller, animated: true, completion: nil)
+    }
+    
+    @IBAction func ArticlePressed(_ sender: UIButton) {
+        HSConfig.setAPIKey(apiKey: "b545f8879a8e7e53f1744a0fb3b15b5a5842787d787be")
+        
+        let frameworkBundle = Bundle(for:  TicketHomeController.self)
+        let bundleURL = frameworkBundle.resourceURL?.appendingPathComponent( "TestDemoPodSDK.bundle")
+        let resourceBundle = Bundle(url: bundleURL!)
+        let storyboard = UIStoryboard(name: "Article", bundle: resourceBundle)
+        let controller = storyboard.instantiateViewController(withIdentifier: "articleBoard") as UIViewController
+        
+        self.present(controller, animated: true, completion: nil)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
